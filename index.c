@@ -5,7 +5,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+IndexEntry* index_find(Index *index, const char *path) {
+    for (int i = 0; i < index->count; i++) {
+        if (strcmp(index->entries[i].path, path) == 0)
+            return &index->entries[i];
+    }
+    return NULL;
+}
+int index_status(const Index *index) {
+    printf("Staged changes:\n");
+    int staged_count = 0;
 
+    for (int i = 0; i < index->count; i++) {
+        printf("  staged:     %s\n", index->entries[i].path);
+        staged_count++;
+    }
+
+    if (staged_count == 0)
+        printf("  (nothing to show)\n");
+
+    printf("\nUnstaged changes:\n  (nothing to show)\n\n");
+    printf("Untracked files:\n  (not implemented)\n\n");
+
+    return 0;
+}
 // ─── LOAD ─────────────────────────────────────────
 int index_load(Index *index) {
     index->count = 0;
