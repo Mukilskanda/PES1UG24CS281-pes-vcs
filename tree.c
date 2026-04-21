@@ -225,3 +225,4 @@ int tree_from_index(ObjectID *id_out) {
 }
 // handling file entries
 // handling directory recursion
+// serialization and object storage
