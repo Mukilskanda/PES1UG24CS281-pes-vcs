@@ -548,6 +548,7 @@ The complexity arises because:
 - Directory structures must be rebuilt recursively
 - File modes and permissions must be preserved
 - Uncommitted changes must be handled safely to avoid data loss
+  
 **Q5.2:** When switching branches, the working directory must be updated to match the target branch's tree. If the user has uncommitted changes to a tracked file, and that file differs between branches, checkout must refuse. Describe how you would detect this "dirty working directory" conflict using only the index and the object store.
 **Answer:**
 To detect a dirty working directory:
