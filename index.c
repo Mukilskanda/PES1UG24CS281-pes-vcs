@@ -144,14 +144,14 @@ int index_load(Index *index) {
 
     while (!feof(f)) {
         IndexEntry entry;
-
         char hash_hex[65];
 
-        if (fscanf(f, "%o %64s %ld %255s\n",
+        if (fscanf(f, "%o %64s %ld %ld %255s\n",
                    &entry.mode,
                    hash_hex,
+                   &entry.mtime_sec,
                    &entry.size,
-                   entry.path) != 4)
+                   entry.path) != 5)
             break;
 
         hex_to_hash(hash_hex, &entry.hash);
@@ -162,7 +162,6 @@ int index_load(Index *index) {
     fclose(f);
     return 0;
 }
-
 // Save the index to .pes/index atomically.
 //
 // HINTS - Useful functions and syscalls:
@@ -181,9 +180,10 @@ int index_save(const Index *index) {
         char hash_hex[65];
         hash_to_hex(&index->entries[i].hash, hash_hex);
 
-        fprintf(f, "%o %s %ld %s\n",
+        fprintf(f, "%o %s %ld %ld %s\n",
                 index->entries[i].mode,
                 hash_hex,
+                index->entries[i].mtime_sec,
                 index->entries[i].size,
                 index->entries[i].path);
     }
@@ -221,15 +221,22 @@ int index_add(Index *index, const char *path) {
 
     free(data);
 
-    IndexEntry entry;
+    IndexEntry *existing = index_find(index, path);
 
+    IndexEntry entry;
     entry.mode = get_file_mode(path);
     entry.hash = id;
+    entry.mtime_sec = st.st_mtime;
     entry.size = st.st_size;
 
     strncpy(entry.path, path, sizeof(entry.path));
+    entry.path[sizeof(entry.path)-1] = '\0';
 
-    index->entries[index->count++] = entry;
+    if (existing) {
+        *existing = entry;  // update existing
+    } else {
+        index->entries[index->count++] = entry;
+    }
 
     return 0;
 }
