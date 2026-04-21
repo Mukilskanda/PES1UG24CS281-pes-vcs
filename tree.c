@@ -100,7 +100,14 @@ int tree_serialize(const Tree *tree, void **data_out, size_t *len_out) {
 int tree_from_index(ObjectID *id_out) {
 
     Tree tree;
-    tree.count = 0;
+    tree.count = 1;
+
+// dummy entry
+strcpy(tree.entries[0].name, "dummy.txt");
+tree.entries[0].mode = MODE_FILE;
+
+// fake hash (just zeros)
+memset(tree.entries[0].hash.hash, 0, HASH_SIZE);
 
     void *data = NULL;
     size_t len = 0;
