@@ -599,6 +599,8 @@ Estimation:
 - ~100,000 tree objects
 - Many blobs (possibly millions)
 - Total traversal may involve hundreds of thousands to millions of objects
+
+- 
 **Q6.2:** Why is it dangerous to run garbage collection concurrently with a commit operation? Describe a race condition where GC could delete an object that a concurrent commit is about to reference. How does Git's real GC avoid this?
 **Answer:**
 Problem:
