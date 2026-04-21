@@ -251,3 +251,4 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     return 0;
 }
 // Added header logic
+// Step 2: buffer combination implemented
