@@ -375,9 +375,10 @@ The test program verifies:
 - Integrity checking (detects corrupted objects)
 
 **📸 Screenshot 1A:** Output of `./test_objects` showing all tests passing.
+![Phase1_1](screenshots/phase1_1.png)
 
 **📸 Screenshot 1B:** `find .pes/objects -type f` showing the sharded directory structure.
-
+![Phase1_2](screenshots/phase1_2.png)
 ---
 
 ## Phase 2: Tree Objects
@@ -407,9 +408,9 @@ The test program verifies:
 - Deterministic serialization (same entries in any order → identical output)
 
 **📸 Screenshot 2A:** Output of `./test_tree` showing all tests passing.
-
+![Phase2_1](screenshots/phase2_1.png)
 **📸 Screenshot 2B:** Pick a tree object from `find .pes/objects -type f` and run `xxd .pes/objects/XX/YYY... | head -20` to show the raw binary format.
-
+![Phase2_2](screenshots/phase2_2.png)
 ---
 
 ## Phase 3: The Index (Staging Area)
@@ -465,9 +466,9 @@ cat .pes/index    # Human-readable text format
 ```
 
 **📸 Screenshot 3A:** Run `./pes init`, `./pes add file1.txt file2.txt`, `./pes status` — show the output.
-
+![Phase3_1](screenshots/phase3_1.png)
 **📸 Screenshot 3B:** `cat .pes/index` showing the text-format index with your entries.
-
+![Phase3_2](screenshots/phase3_2.png)
 ---
 
 ## Phase 4: Commits and History
@@ -515,12 +516,14 @@ You can also run the full integration test:
 make test-integration
 ```
 
-**📸 Screenshot 4A:** Output of `./pes log` showing three commits with hashes, authors, timestamps, and messages.
+**📸 Screenshot 4A:** Output of `./pes log`
+![Phase4_SS1](screenshots/Phase4_SS1.png)
 
-**📸 Screenshot 4B:** `find .pes -type f | sort` showing object store growth after three commits.
+**📸 Screenshot 4B:** `find .pes -type f | sort`
+![Phase4_SS2](screenshots/Phase4_SS2.png)
 
-**📸 Screenshot 4C:** `cat .pes/refs/heads/main` and `cat .pes/HEAD` showing the reference chain.
-
+**📸 Screenshot 4C:** `cat .pes/refs/heads/main` and `cat .pes/HEAD`
+![Phase4_SS3](screenshots/Phase4_SS3.png)
 ---
 
 ## Phase 5 & 6: Analysis-Only Questions
@@ -530,17 +533,89 @@ The following questions cover filesystem concepts beyond the implementation scop
 ### Branching and Checkout
 
 **Q5.1:** A branch in Git is just a file in `.git/refs/heads/` containing a commit hash. Creating a branch is creating a file. Given this, how would you implement `pes checkout <branch>` — what files need to change in `.pes/`, and what must happen to the working directory? What makes this operation complex?
+**Answer:**
+To implement `pes checkout <branch>`:
+- Update `.pes/HEAD` to point to the new branch:
 
+ref: refs/heads/<branch>
+
+- Read the commit hash from `.pes/refs/heads/<branch>`
+- Load the commit object, then its tree
+- Reconstruct the working directory by writing files from the tree
+
+The complexity arises because:
+- Existing files may need to be overwritten or deleted
+- Directory structures must be rebuilt recursively
+- File modes and permissions must be preserved
+- Uncommitted changes must be handled safely to avoid data loss
 **Q5.2:** When switching branches, the working directory must be updated to match the target branch's tree. If the user has uncommitted changes to a tracked file, and that file differs between branches, checkout must refuse. Describe how you would detect this "dirty working directory" conflict using only the index and the object store.
+**Answer:**
+To detect a dirty working directory:
+- For each file in the index:
+- Read the file from the working directory
+- Compute its hash
+- Compare it with the hash stored in the index
+- If they differ → the file has unstaged changes
 
+Then compare:
+- The working file with the version in the target branch
+- If both differ → conflict exists
+
+If any conflict is found:
+- Abort checkout to prevent overwriting user changes
+
+---
 **Q5.3:** "Detached HEAD" means HEAD contains a commit hash directly instead of a branch reference. What happens if you make commits in this state? How could a user recover those commits?
+**Answer:**
+In a detached HEAD state:
+- HEAD points directly to a commit instead of a branch
+- New commits are created but not referenced by any branch
+- These commits become unreachable (dangling)
+
+Recovery:
+- Use `pes log` to find the commit hash
+- Create a new branch pointing to that commit:
+
+echo <commit_hash> > .pes/refs/heads/new_branch
+
+- Update HEAD to point to the new branch
 
 ### Garbage Collection and Space Reclamation
 
 **Q6.1:** Over time, the object store accumulates unreachable objects — blobs, trees, or commits that no branch points to (directly or transitively). Describe an algorithm to find and delete these objects. What data structure would you use to track "reachable" hashes efficiently? For a repository with 100,000 commits and 50 branches, estimate how many objects you'd need to visit.
+**Answer:**
+Algorithm:
+1. Start from all branch heads
+2. Traverse commits → trees → blobs recursively
+3. Mark all visited objects as reachable
+4. Scan `.pes/objects`
+5. Delete objects not in the reachable set
 
+Data structure:
+- Use a hash set to store reachable hashes for fast lookup
+
+Estimation:
+- ~100,000 commits
+- ~100,000 tree objects
+- Many blobs (possibly millions)
+- Total traversal may involve hundreds of thousands to millions of objects
 **Q6.2:** Why is it dangerous to run garbage collection concurrently with a commit operation? Describe a race condition where GC could delete an object that a concurrent commit is about to reference. How does Git's real GC avoid this?
+**Answer:**
+Problem:
+- GC may delete objects that are not yet referenced by HEAD
 
+Race condition:
+1. Commit creates new objects (blobs/trees)
+2. Before updating HEAD, GC runs
+3. GC sees these objects as unreachable
+4. Deletes them
+5. Commit updates HEAD → now referencing missing objects → corruption
+
+Git avoids this by:
+- Using atomic operations (write + rename)
+- Locking mechanisms during critical operations
+- Using temporary files
+- Delaying garbage collection (grace period for new objects)
 ---
 
 ## Submission Checklist
@@ -600,50 +675,4 @@ The following questions cover filesystem concepts beyond the implementation scop
 - **Git Internals** (Pro Git book): https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain
 - **Git from the inside out**: https://codewords.recurse.com/issues/two/git-from-the-inside-out
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
-## Phase 1
 
-### Screenshot 1A
-![Phase1_1](screenshots/phase1_1.png)
-
-### Screenshot 1B
-![Phase1_2](screenshots/phase1_2.png)
-
-## Phase 2
-
-### Screenshot 2A
-![Phase2_1](screenshots/phase2_1.png)
-
-### Screenshot 2B
-![Phase2_2](screenshots/phase2_2.png)
-
-## Phase 3
-
-### Screenshot 3A
-![Phase3_1](screenshots/phase3_1.png)
-
-### Screenshot 3B
-![Phase3_2](screenshots/phase3_2.png)
-
-## Phase 4
-
-### Screenshot 4A
-![Phase4_1](screenshots/phase4_1.png)
-
-### Screenshot 4B
-![Phase4_2](screenshots/phase4_2.png)
-## Phase 5 & 6 Answers
-
-### Q5.1
-(answer)
-
-### Q5.2
-(answer)
-
-### Q5.3
-(answer)
-
-### Q6.1
-(answer)
-
-### Q6.2
-(answer)
