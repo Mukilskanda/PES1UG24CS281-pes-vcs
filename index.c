@@ -235,3 +235,6 @@ int index_add(Index *index, const char *path) {
     return 0;
 }
 // loading index from file
+// saving index to file
+// adding file to index
+// final index implementation
