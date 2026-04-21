@@ -375,10 +375,10 @@ The test program verifies:
 - Integrity checking (detects corrupted objects)
 
 **📸 Screenshot 1A:** Output of `./test_objects` showing all tests passing.
-![Phase1_1](screenshots/phase1_1.png)
+![Phase1_SS1](screenshots/Phase1_SS1.png)
 
 **📸 Screenshot 1B:** `find .pes/objects -type f` showing the sharded directory structure.
-![Phase1_2](screenshots/phase1_2.png)
+![Phase1_SS2](screenshots/Phase1_SS2.png)
 ---
 
 ## Phase 2: Tree Objects
@@ -408,9 +408,9 @@ The test program verifies:
 - Deterministic serialization (same entries in any order → identical output)
 
 **📸 Screenshot 2A:** Output of `./test_tree` showing all tests passing.
-![Phase2_1](screenshots/phase2_1.png)
+![Phase2_SS1](screenshots/Phase2_SS1.png)
 **📸 Screenshot 2B:** Pick a tree object from `find .pes/objects -type f` and run `xxd .pes/objects/XX/YYY... | head -20` to show the raw binary format.
-![Phase2_2](screenshots/phase2_2.png)
+![Phase2_SS2](screenshots/Phase2_SS2.png)
 ---
 
 ## Phase 3: The Index (Staging Area)
@@ -466,9 +466,9 @@ cat .pes/index    # Human-readable text format
 ```
 
 **📸 Screenshot 3A:** Run `./pes init`, `./pes add file1.txt file2.txt`, `./pes status` — show the output.
-![Phase3_1](screenshots/phase3_1.png)
+![Phase3_SS1](screenshots/Phase3_SS1.png)
 **📸 Screenshot 3B:** `cat .pes/index` showing the text-format index with your entries.
-![Phase3_2](screenshots/phase3_2.png)
+![Phase3_SS2](screenshots/Phase3_SS2.png)
 ---
 
 ## Phase 4: Commits and History
