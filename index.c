@@ -23,6 +23,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
+#include "pes.h"
+#include "tree.h"
 
 // ─── PROVIDED ────────────────────────────────────────────────────────────────
 
@@ -138,19 +140,18 @@ int index_load(Index *index) {
     index->count = 0;
 
     FILE *f = fopen(INDEX_FILE, "r");
-    if (!f) return 0; // empty index
+    if (!f) return 0;
 
     while (!feof(f)) {
         IndexEntry entry;
 
         char hash_hex[65];
 
-        if (fscanf(f, "%o %64s %ld %ld %255s\n",
+        if (fscanf(f, "%o %64s %ld %255s\n",
                    &entry.mode,
                    hash_hex,
-                   &entry.mtime,
                    &entry.size,
-                   entry.path) != 5)
+                   entry.path) != 4)
             break;
 
         hex_to_hash(hash_hex, &entry.hash);
@@ -180,10 +181,9 @@ int index_save(const Index *index) {
         char hash_hex[65];
         hash_to_hex(&index->entries[i].hash, hash_hex);
 
-        fprintf(f, "%o %s %ld %ld %s\n",
+        fprintf(f, "%o %s %ld %s\n",
                 index->entries[i].mode,
                 hash_hex,
-                index->entries[i].mtime,
                 index->entries[i].size,
                 index->entries[i].path);
     }
@@ -225,7 +225,6 @@ int index_add(Index *index, const char *path) {
 
     entry.mode = get_file_mode(path);
     entry.hash = id;
-    entry.mtime = st.st_mtime;
     entry.size = st.st_size;
 
     strncpy(entry.path, path, sizeof(entry.path));
