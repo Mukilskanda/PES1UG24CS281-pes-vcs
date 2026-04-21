@@ -224,3 +224,4 @@ int tree_from_index(ObjectID *id_out) {
     return -1;
 }
 // handling file entries
+// handling directory recursion
