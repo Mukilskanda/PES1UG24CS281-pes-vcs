@@ -135,10 +135,31 @@ int index_status(const Index *index) {
 //
 // Returns 0 on success, -1 on error.
 int index_load(Index *index) {
-    // TODO: Implement index loading
-    // (See Lab Appendix for logical steps)
-    (void)index;
-    return -1;
+    index->count = 0;
+
+    FILE *f = fopen(INDEX_FILE, "r");
+    if (!f) return 0; // empty index
+
+    while (!feof(f)) {
+        IndexEntry entry;
+
+        char hash_hex[65];
+
+        if (fscanf(f, "%o %64s %ld %ld %255s\n",
+                   &entry.mode,
+                   hash_hex,
+                   &entry.mtime,
+                   &entry.size,
+                   entry.path) != 5)
+            break;
+
+        hex_to_hash(hash_hex, &entry.hash);
+
+        index->entries[index->count++] = entry;
+    }
+
+    fclose(f);
+    return 0;
 }
 
 // Save the index to .pes/index atomically.
@@ -152,10 +173,23 @@ int index_load(Index *index) {
 //
 // Returns 0 on success, -1 on error.
 int index_save(const Index *index) {
-    // TODO: Implement atomic index saving
-    // (See Lab Appendix for logical steps)
-    (void)index;
-    return -1;
+    FILE *f = fopen(INDEX_FILE, "w");
+    if (!f) return -1;
+
+    for (int i = 0; i < index->count; i++) {
+        char hash_hex[65];
+        hash_to_hex(&index->entries[i].hash, hash_hex);
+
+        fprintf(f, "%o %s %ld %ld %s\n",
+                index->entries[i].mode,
+                hash_hex,
+                index->entries[i].mtime,
+                index->entries[i].size,
+                index->entries[i].path);
+    }
+
+    fclose(f);
+    return 0;
 }
 
 // Stage a file for the next commit.
@@ -168,8 +202,35 @@ int index_save(const Index *index) {
 //
 // Returns 0 on success, -1 on error.
 int index_add(Index *index, const char *path) {
-    // TODO: Implement file staging
-    // (See Lab Appendix for logical steps)
-    (void)index; (void)path;
-    return -1;
+    struct stat st;
+
+    if (stat(path, &st) < 0) return -1;
+
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+
+    char *data = malloc(st.st_size);
+    fread(data, 1, st.st_size, f);
+    fclose(f);
+
+    ObjectID id;
+    if (object_write(OBJ_BLOB, data, st.st_size, &id) < 0) {
+        free(data);
+        return -1;
+    }
+
+    free(data);
+
+    IndexEntry entry;
+
+    entry.mode = get_file_mode(path);
+    entry.hash = id;
+    entry.mtime = st.st_mtime;
+    entry.size = st.st_size;
+
+    strncpy(entry.path, path, sizeof(entry.path));
+
+    index->entries[index->count++] = entry;
+
+    return 0;
 }
