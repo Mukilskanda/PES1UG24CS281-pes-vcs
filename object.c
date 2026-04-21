@@ -253,3 +253,4 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
 // Added header logic
 // Step 2: buffer combination implemented
 // Step: added file writing logic
+// Step: finalized object_write and object_read
