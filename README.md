@@ -600,3 +600,50 @@ The following questions cover filesystem concepts beyond the implementation scop
 - **Git Internals** (Pro Git book): https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain
 - **Git from the inside out**: https://codewords.recurse.com/issues/two/git-from-the-inside-out
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
+## Phase 1
+
+### Screenshot 1A
+![Phase1_1](screenshots/phase1_1.png)
+
+### Screenshot 1B
+![Phase1_2](screenshots/phase1_2.png)
+
+## Phase 2
+
+### Screenshot 2A
+![Phase2_1](screenshots/phase2_1.png)
+
+### Screenshot 2B
+![Phase2_2](screenshots/phase2_2.png)
+
+## Phase 3
+
+### Screenshot 3A
+![Phase3_1](screenshots/phase3_1.png)
+
+### Screenshot 3B
+![Phase3_2](screenshots/phase3_2.png)
+
+## Phase 4
+
+### Screenshot 4A
+![Phase4_1](screenshots/phase4_1.png)
+
+### Screenshot 4B
+![Phase4_2](screenshots/phase4_2.png)
+## Phase 5 & 6 Answers
+
+### Q5.1
+(answer)
+
+### Q5.2
+(answer)
+
+### Q5.3
+(answer)
+
+### Q6.1
+(answer)
+
+### Q6.2
+(answer)
